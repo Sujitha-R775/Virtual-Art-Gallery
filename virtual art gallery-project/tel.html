@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interactive Art Gallery Cart with Confirm & Notification</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      margin: 0;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    .main-title {
+      text-align: center;
+      font-size: 3rem;
+      color: #5a2a83;
+      text-shadow: 2px 2px 5px rgba(90, 42, 131, 0.3);
+      margin-bottom: 50px;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      max-width: 1200px;
+      margin: auto;
+      gap: 25px;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 15px;
+      width: 30%;
+      box-shadow: 0 10px 15px rgba(90, 42, 131, 0.15);
+      padding: 20px;
+      box-sizing: border-box;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .product-card:hover {
+      transform: translateY(-10px) scale(1.05);
+      box-shadow: 0 20px 25px rgba(90, 42, 131, 0.3);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      transition: transform 0.3s ease;
+    }
+
+    .product-card:hover img {
+      transform: scale(1.1);
+    }
+
+    .stars {
+      display: flex;
+      justify-content: center;
+      margin: 15px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .star {
+      font-size: 28px;
+      color: #d3d3d3;
+      padding: 0 6px;
+      transition: color 0.25s ease;
+    }
+
+    .star.selected,
+    .star:hover,
+    .star:hover ~ .star {
+      color: #ffb400;
+    }
+
+    .add-to-cart {
+      background: #5a2a83;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+
+    .add-to-cart:hover {
+      background: #7e3fb5;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 900px) {
+      .product-card {
+        width: 45%;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .product-card {
+        width: 100%;
+      }
+    }
+
+    /* Modal styles */
+    #confirmModal {
+      display: none; /* hidden by default */
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      border: 2px solid #5a2a83;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      padding: 20px 30px;
+      border-radius: 8px;
+      z-index: 1000;
+      width: 320px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      user-select: none;
+    }
+
+    #confirmModal p {
+      margin: 0 0 15px 0;
+      font-size: 18px;
+      color: #333;
+    }
+
+    #confirmModal button {
+      padding: 8px 16px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      margin-right: 10px;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+
+    #confirmModal button.ok {
+      background: #5a2a83;
+      color: white;
+    }
+
+    #confirmModal button.ok:hover {
+      background: #7e3fb5;
+    }
+
+    #confirmModal button.cancel {
+      background: #dc3545;
+      color: white;
+    }
+
+    #confirmModal button.cancel:hover {
+      background: #c82333;
+    }
+
+    /* Overlay behind modal */
+    #modalOverlay {
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.3);
+      z-index: 999;
+    }
+
+    /* Notification bar styles */
+    #notification {
+      position: fixed;
+      top: -60px; /* hidden above */
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #5a2a83;
+      color: white;
+      padding: 15px 30px;
+      border-radius: 5px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      font-size: 18px;
+      font-weight: 600;
+      z-index: 1100;
+      transition: top 0.4s ease;
+      user-select: none;
+    }
+   
+    .wishlist-heart {
+      position: absolute;
+      top: 12px;
+      right: 18px;
+      font-size: 24px;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      z-index: 5;
+    }
+
+    .wishlist-heart.active {
+      color: #e74c3c;
+    } 
+  </style>
+</head>
+
+<body>
+  <h1 class="main-title">✨ Discover & Collect Stunning Artworks! 🎨</h1>
+
+  <div class="container">
+    <!-- Product cards (9 total) -->
+    <div class="product-card" data-name="Abstract Painting" data-id="1">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="popsugar.webp" alt="Abstract Painting" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-name="Parbo Scene" data-id="2">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="nature.jpg" alt="Parbo Scene" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-name="Museum Art" data-id="3">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="museum.webp" alt="Museum Art" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-name="Avenue Scene" data-id="4">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="avenue.webp" alt="Avenue Scene" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-name="Dew Pond" data-id="5">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="mountain.webp" alt="Dew Pond" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-name="Museum Faces" data-id="6">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="person.jpg" alt="Museum Faces" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-name="Alleyway" data-id="7">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="nature2.webp" alt="Alleyway" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-name="We Are Turtles" data-id="8">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="painting.webp" alt="We Are Turtles" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+
+    <div class="product-card" data-name="Streetcar" data-id="9">
+      <span class="wishlist-heart" title="Add to Wishlist">♡</span>
+      <img src="premium.jpg" alt="Streetcar" />
+      <div class="stars">
+        <span class="star" data-value="1">★</span>
+        <span class="star" data-value="2">★</span>
+        <span class="star" data-value="3">★</span>
+        <span class="star" data-value="4">★</span>
+        <span class="star" data-value="5">★</span>
+      </div>
+      <button class="add-to-cart">Add to Cart</button>
+    </div>
+  </div>
+
+  <!-- Modal and overlay -->
+  <div id="confirmModal">
+    <p id="modalText"></p>
+    <button class="ok" id="modalOk">OK</button>
+    <button class="cancel" id="modalCancel">Cancel</button>
+  </div>
+  <div id="modalOverlay"></div>
+
+  <!-- Notification bar -->
+  <div id="notification"></div>
+  
+  <script>
+    // Initialize cart and wishlist from localStorage or empty arrays
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+    // Star rating logic
+    document.querySelectorAll('.product-card').forEach(card => {
+      const stars = card.querySelectorAll('.star');
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          stars.forEach(s => s.classList.remove('selected'));
+          star.classList.add('selected');
+        });
+      });
+    });
+
+    // Modal and Notification elements
+    const modal = document.getElementById('confirmModal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalText = document.getElementById('modalText');
+    const modalOk = document.getElementById('modalOk');
+    const modalCancel = document.getElementById('modalCancel');
+    const notification = document.getElementById('notification');
+
+    // Variables to store selected product info
+    let selectedProductName = '';
+    let selectedProductId = '';
+    let selectedProductImg = '';
+
+    // Add to Cart button click handler
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+      button.addEventListener('click', e => {
+        const card = e.target.closest('.product-card');
+        selectedProductName = card.dataset.name;
+        selectedProductId = card.dataset.id;
+        selectedProductImg = card.querySelector('img').src;  // get img src
+        modalText.textContent = `Add "${selectedProductName}" to your cart?`;
+        showModal();
+      });
+    });
+
+    // Confirm add to cart
+    modalOk.addEventListener('click', () => {
+      hideModal();
+
+      // Add selected product to cart if not already added
+      if (!cart.find(item => item.id === selectedProductId)) {
+        cart.push({ id: selectedProductId, name: selectedProductName, imgSrc: selectedProductImg });
+        localStorage.setItem('cart', JSON.stringify(cart)); // Save updated cart
+      }
+
+      showNotification(`Added "${selectedProductName}" to your cart!`);
+    });
+
+    modalCancel.addEventListener('click', hideModal);
+    modalOverlay.addEventListener('click', hideModal);
+
+    function showModal() {
+      modal.style.display = 'block';
+      modalOverlay.style.display = 'block';
+    }
+
+    function hideModal() {
+      modal.style.display = 'none';
+      modalOverlay.style.display = 'none';
+    }
+
+    function showNotification(message) {
+      notification.textContent = message;
+      notification.style.top = '20px';
+      setTimeout(() => {
+        notification.style.top = '-60px';
+      }, 3000);
+    }
+
+    // Wishlist logic
+    document.querySelectorAll('.wishlist-heart').forEach(heart => {
+      heart.addEventListener('click', e => {
+        const card = e.target.closest('.product-card');
+        const productId = card.dataset.id;
+        const productName = card.dataset.name;
+        const productImgSrc = card.querySelector('img').src;
+
+        heart.classList.toggle('active');
+        heart.textContent = heart.classList.contains('active') ? '❤️' : '♡';
+
+        if (heart.classList.contains('active')) {
+          // Add to wishlist if not already there
+          if (!wishlist.find(item => item.id === productId)) {
+            wishlist.push({ id: productId, name: productName, imgSrc: productImgSrc });
+            localStorage.setItem('wishlist', JSON.stringify(wishlist)); // Save updated wishlist
+          }
+          showNotification(`Added "${productName}" to Wishlist!`);
+        } else {
+          // Remove from wishlist
+          const index = wishlist.findIndex(item => item.id === productId);
+          if (index > -1) wishlist.splice(index, 1);
+          localStorage.setItem('wishlist', JSON.stringify(wishlist)); // Save updated wishlist
+          showNotification(`Removed "${productName}" from Wishlist.`);
+        }
+
+        console.log('Current Wishlist:', wishlist);
+      });
+    });
+  </script>
+</body>
+</html>

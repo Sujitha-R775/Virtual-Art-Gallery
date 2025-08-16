@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Art Cart 23</title>
+  <style>
+    :root {
+      --bg: linear-gradient(to bottom right, #f0f8ff, #e0f7fa);
+      --text: #222;
+      --card-bg: #ffffff;
+      --accent: #008080;
+      --highlight: #ff9800;
+      --heart: red;
+      --title-bg: #fef7e0;
+      --btn-bg: #008080;
+      --btn-hover: #006666;
+    }
+    body.dark {
+      --bg: #121212;
+      --text: #f1f1f1;
+      --card-bg: #1e1e1e;
+      --title-bg: #2a2a2a;
+      --btn-bg: #004d4d;
+      --btn-hover: #003333;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      line-height: 1.5;
+    }
+    nav {
+      background-color: var(--accent);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 30px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    nav .logo {
+      font-size: 30px;
+      font-weight: bold;
+      font-family: 'Brush Script MT', cursive;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    nav ul li a:hover {
+      color: #ffddc1;
+    }
+    .toggle-btn {
+      background: white;
+      color: var(--accent);
+      padding: 5px 12px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      margin-left: 20px;
+    }
+    .header {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .header img {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+    }
+    .header h1 {
+      font-family: 'Brush Script MT', cursive;
+      font-size: 42px;
+      margin-top: 15px;
+    }
+    .search-bar {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      padding: 8px 16px;
+      width: 260px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 25px;
+      padding: 20px 40px;
+    }
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      position: relative;
+      transition: transform 0.3s ease, box-shadow 0.3s;
+      cursor: pointer;
+      text-align: center;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+    }
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+    .art-title {
+      margin-top: 12px;
+      margin-bottom: 10px;
+      padding: 6px 10px;
+      background-color: var(--title-bg);
+      color: var(--highlight);
+      font-size: 18px;
+      font-weight: 700;
+      text-transform: uppercase;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .likes {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .wishlist {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 22px;
+      cursor: pointer;
+      color: #bbb;
+      z-index: 1;
+    }
+    .wishlist.liked {
+      color: var(--heart);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 99;
+    }
+    .modal-content {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+    .modal-content img {
+      width: 100%;
+      border-radius: 8px;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px; right: 15px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #333;
+    }
+    /* Top Artists */
+    .top-artists {
+      padding: 40px 20px;
+      text-align: center;
+      background: var(--card-bg);
+      margin: 40px auto;
+      max-width: 1200px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    .top-artists h2 {
+      font-size: 32px;
+      margin-bottom: 25px;
+      color: var(--accent);
+    }
+    .artist-list {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .artist-card {
+      background: var(--title-bg);
+      border-radius: 10px;
+      padding: 15px;
+      width: 180px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .artist-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+    }
+    .artist-card img {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 12px;
+      border: 3px solid var(--accent);
+    }
+    .artist-card h4 {
+      margin-bottom: 6px;
+      color: var(--highlight);
+    }
+    .artist-card p {
+      font-size: 14px;
+      color: var(--text);
+    }
+    /* Events Section */
+    .events {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px 40px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    .events h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--accent);
+      text-align: center;
+    }
+    .events ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+    .events li {
+      font-size: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid #ddd;
+      color: var(--text);
+    }
+    .events li strong {
+      color: var(--highlight);
+    }
+    /* Blog Highlights */
+    .blog-highlights {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px 40px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    }
+    .blog-highlights h2 {
+      font-size: 28px;
+      margin-bottom: 25px;
+      color: var(--accent);
+      text-align: center;
+    }
+    .blog-highlights article {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 15px;
+    }
+    .blog-highlights h3 {
+      font-size: 20px;
+      margin-bottom: 8px;
+      color: var(--highlight);
+    }
+    .blog-highlights h3 a {
+      text-decoration: none;
+      color: var(--highlight);
+    }
+    .blog-highlights h3 a:hover {
+      text-decoration: underline;
+    }
+    .blog-highlights p {
+      color: var(--text);
+      font-size: 15px;
+    }
+    /* CTA */
+    .cta {
+      background: var(--accent);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      margin: 50px auto;
+      max-width: 900px;
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+    .cta h2 {
+      font-size: 32px;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+    .cta p {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    .btn {
+      background-color: var(--btn-bg);
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+    .btn:hover {
+      background-color: var(--btn-hover);
+    }
+    /* Instagram Feed */
+    .instagram-feed {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px 40px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .instagram-feed h2 {
+      font-size: 28px;
+      margin-bottom: 25px;
+      color: var(--accent);
+    }
+    .insta-posts {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .insta-posts img {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+    .insta-posts img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+    }
+    /* Artist Spotlight */
+    .artist-spotlight {
+      max-width: 900px;
+      margin: 50px auto 80px;
+      padding: 20px 40px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .artist-spotlight h2 {
+      width: 100%;
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--accent);
+      text-align: center;
+    }
+    .spotlight-content {
+      display: flex;
+      align-items: center;
+      gap: 25px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .spotlight-content img {
+      width: 200px;
+      height: 200px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 3px solid var(--accent);
+    }
+    .spotlight-content p {
+      max-width: 500px;
+      font-size: 16px;
+      color: var(--text);
+    }
+    .spotlight-content .btn {
+      margin-top: 15px;
+      display: inline-block;
+    }
+    /* Responsive */
+    @media (max-width: 950px) {
+      .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 20px 20px;
+      }
+      .artist-list {
+        justify-content: center;
+      }
+      .artist-spotlight {
+        flex-direction: column;
+        text-align: center;
+      }
+      .spotlight-content {
+        flex-direction: column;
+      }
+      .spotlight-content p {
+        max-width: 100%;
+      }
+    }
+    @media (max-width: 600px) {
+      .gallery {
+        grid-template-columns: 1fr;
+        padding: 10px 10px;
+      }
+      .search-bar input {
+        width: 90%;
+      }
+      .artist-card {
+        width: 140px;
+      }
+      .insta-posts img {
+        width: 140px;
+        height: 140px;
+      }
+      .events, .blog-highlights, .cta, .instagram-feed, .artist-spotlight {
+        padding: 15px 10px;
+        margin: 30px 10px;
+      }
+      .cta h2 {
+        font-size: 24px;
+      }
+    }
+    /* Dropdown for Gallery */
+nav ul li.dropdown {
+  position: relative;
+}
+
+nav ul li .dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: var(--accent);
+  min-width: 160px;
+  top: 100%;
+  left: 0;
+  z-index: 99;
+  border-radius: 0 0 6px 6px;
+}
+
+nav ul li .dropdown-menu li {
+  width: 100%;
+}
+
+nav ul li .dropdown-menu a {
+  display: block;
+  padding: 10px 16px;
+  color: white;
+}
+
+nav ul li .dropdown-menu a:hover {
+  background-color: var(--btn-hover);
+}
+
+nav ul li.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="logo">Beauty of Art Unfolded</div>
+    <ul>
+      <li><a href="#">Home</a></li>
+      <li class="dropdown">
+        <a href="#">Gallery ▾</a>
+       <ul class="dropdown-menu">
+        <li><a href="tel.html">Main Gallery</a></li>
+         <li><a href="3dimen.html">Portrait Wall</a></li>
+      </ul>
+      </li>
+
+      <li><a href="upload.html">Upload Art</a></li>
+      <li><a href="wishlist.html">Wishlist</a></li>
+      <li><a href="carts.html">Cart</a></li>
+      <li><a href="log.html">Login</a></li>
+    </ul>
+    <button class="toggle-btn" onclick="toggleDark()">🌙 Mode</button>
+  </nav>
+
+  <!-- Header -->
+  <div class="header">
+    <img src="painting.webp" alt="Art Logo" />
+    <h1>The Art</h1>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search artworks..." />
+  </div>
+
+  <!-- Gallery -->
+  <div class="gallery" id="gallery">
+    <div class="card" data-title="Colorful Eye" onclick="openModal('eye.webp')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="eye.webp" alt="Colorful Eye" />
+      <h3 class="art-title">Colorful Eye</h3>
+    </div>
+    <div class="card" data-title="Fire Fox" onclick="openModal('art1.webp')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="art1.webp" alt="Fire Fox" />
+      <h3 class="art-title">Fire Fox</h3>
+    </div>
+    <div class="card" data-title="3D Nature Twist" onclick="openModal('3d.webp')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="3d.webp" alt="3D Nature Twist" />
+      <h3 class="art-title">3D Nature Twist</h3>
+    </div>
+    <div class="card" data-title="Wooden Doll Beauty" onclick="openModal('doll.jpg')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="doll.jpg" alt="Wooden Doll Beauty" />
+      <h3 class="art-title">Wooden Doll Beauty</h3>
+    </div>
+    <div class="card" data-title="Majestic Horse" onclick="openModal('horse.webp')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="horse.webp" alt="Majestic Horse" />
+      <h3 class="art-title">Majestic Horse</h3>
+    </div>
+    <div class="card" data-title="Fruitful Composition" onclick="openModal('fruit.webp')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="fruit.webp" alt="Fruitful Composition" />
+      <h3 class="art-title">Fruitful Composition</h3>
+    </div>
+     <div class="card" data-title="Serene Landscape" onclick="openModal('nature1.webp')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="naure1.webp" alt="Serene Landscape" />
+      <h3 class="art-title">Serene Landscape</h3>
+    </div>
+     <div class="card" data-title="Mysterious Portrait" onclick="openModal('person.jpg')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="person.jpg" alt="Mysterious Portrait" />
+      <h3 class="art-title">Mysterious Portrait</h3>
+    </div>
+     <div class="card" data-title="popsugar" onclick="openModal('popsugar.webp')">
+      <span class="wishlist" onclick="toggleWishlist(event, this)">❤️</span>
+      <img src="popsugar.webp" alt="popsugar" />
+      <h3 class="art-title">popsugar</h3>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="modal" onclick="closeModal(event)">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal(event)">&times;</span>
+      <img id="modalImg" src="" alt="Artwork"/>
+    </div>
+  </div>
+
+  <!-- Top Artists Section -->
+  <section class="top-artists">
+    <h2>Top Artists</h2>
+    <div class="artist-list">
+      <div class="artist-card">
+        <img src="https://tse3.mm.bing.net/th/id/OIP.2E07lekVgRORKdG-GtvMqwHaIQ?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Artist 1" />
+        <h4>Arjun</h4>
+        <p>Contemporary Painter</p>
+      </div>
+      <div class="artist-card">
+        <img src="https://cdn.sanity.io/images/cxgd3urn/production/d50f1aa32a6ee04a9ab606eb8e2a618c83ecb894-3648x5472.jpg?rect=203,1894,3243,2432&w=640&h=480&fit=crop&auto=format" alt="Artist 2" />
+        <h4>Emily Carter</h4>
+        <p>Digital Illustrator</p>
+      </div>
+      <div class="artist-card">
+        <img src="https://tse4.mm.bing.net/th/id/OIP.JN4PpjTCByP0wsfB6jOF9QHaHA?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Artist 4" />
+        <h4>Ravi Singh</h4>
+        <p>Sculptor</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Upcoming Events -->
+  <section class="events">
+    <h2>Upcoming Events</h2>
+    <ul>
+      <li><strong>Art Workshop - July 30, 2025</strong><br />Join us for a hands-on painting workshop with local artists.</li>
+      <li><strong>Summer Exhibition - August 15, 2025</strong><br />Featuring contemporary works by emerging artists.</li>
+    </ul>
+  </section>
+
+  <!-- Blog Highlights -->
+  <section class="blog-highlights">
+    <h2>Latest from Our Blog</h2>
+    <article>
+      <h3><a href="#">The Rise of Digital Art</a></h3>
+      <p>Discover how technology is transforming the art world and inspiring new creativity.</p>
+    </article>
+    <article>
+      <h3><a href="#">Interview with Emily Carter</a></h3>
+      <p>Insights from one of our top artists on her creative process and inspirations.</p>
+    </article>
+  </section>
+
+  <!-- Call to Action -->
+  <section class="cta">
+    <h2>Become a Member</h2>
+    <p>Support the arts and enjoy exclusive perks like early access to exhibitions.</p>
+    <a href="mem.html" class="btn">Join Now</a>
+  </section>
+
+  <!-- Instagram Feed -->
+  <section class="instagram-feed">
+    <h2>Follow Us on Instagram</h2>
+    <div class="insta-posts">
+      <img src="https://i.pinimg.com/736x/f4/06/23/f40623ab05854ddf7cbff4d1ba2fbcf5.jpg" alt="Instagram Post 1" />
+      <img src="https://tse2.mm.bing.net/th/id/OIP.dAgDdxjEgIsE3xv5YByBYAHaGJ?w=800&h=664&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Instagram Post 2" />
+      <img src="https://img.freepik.com/premium-psd/art-gallery-exhibition-instagram-posts-collection_23-2149721720.jpg?w=2000" alt="Instagram Post 3" />
+    </div>
+  </section>
+
+  <!-- Artist Spotlight -->
+  <section class="artist-spotlight">
+    <h2>Artist Spotlight: Sophia Chen</h2>
+    <div class="spotlight-content">
+      <img src="https://tse1.mm.bing.net/th/id/OIP.aNfa0vmeGnSrj4-rQSFDPwHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Sophia Chen" />
+      <div>
+        <p>Sophia Chen is a digital illustrator known for her vibrant and emotive works that blend traditional art techniques with modern technology. Her creations capture the beauty of human emotions and the complexity of nature.</p>
+        <a href="sophia.html" class="btn">View More</a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Dark Mode toggle
+    function toggleDark() {
+      document.body.classList.toggle('dark');
+    }
+
+    // Wishlist toggle
+    function toggleWishlist(event, el) {
+      event.stopPropagation(); // Prevent triggering card click
+      el.classList.toggle('liked');
+    }
+
+    // Modal open
+    function openModal(imgSrc) {
+      const modal = document.getElementById('modal');
+      const modalImg = document.getElementById('modalImg');
+      modal.style.display = 'flex';
+      modalImg.src = imgSrc;
+    }
+
+    // Modal close
+    function closeModal(event) {
+      if(event.target.classList.contains('modal') || event.target.classList.contains('close-btn')) {
+        document.getElementById('modal').style.display = 'none';
+      }
+    }
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const gallery = document.getElementById('gallery');
+    searchInput.addEventListener('input', function() {
+      const filter = this.value.toLowerCase();
+      const cards = gallery.querySelectorAll('.card');
+      cards.forEach(card => {
+        const title = card.dataset.title.toLowerCase();
+        card.style.display = title.includes(filter) ? '' : 'none';
+      });
+    });
+  </script>
+
+</body>
+</html>
